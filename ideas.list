@@ -1,11 +1,11 @@
-1, Line Management
 2, Ambulance priority
 3, Kottakkal log
 4, School rush,bus controlling
 5, Event data
-6, More Vehicle data
 7, Disaster & Accident monitoring
 8, Listing needed service providers
 9, Accident report to Hospital
    Casualty cout
-   
+10, AI based trsaffic prediction
+11, Automatic logging with timing
+12, Autoalerting with log
