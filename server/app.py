@@ -122,7 +122,7 @@ def assistance():
     for report in reports_:
         log+= (report['type']+ " at "+ str(report['time']) + " \n ")
     print(log)
-    response = model.generate_content("You are a helpful assitance for Kottakkal traffic controlling & managing ,responsive positivly. so generate not too long response for users prompt . use log data user requested any relevent data that in log log :"+log+". dont use any questions to users prompt"+data['prompt'])
+    response = model.generate_content("You are a helpful assitance for Kottakkal traffic controlling & managing . like a interatcive talk . dont say good morning like things . you not need responsiblty to clear any traffic . responsive positivly. so generate not too long response for users prompt . use log data user requested any relevent data that in log log :"+log+". dont use any questions to users prompt"+data['prompt'])
     print(response.text)
     return jsonify({"response":response.text})
 
