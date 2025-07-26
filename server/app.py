@@ -5,10 +5,7 @@ from datetime import datetime, timedelta, timezone
 import google.generativeai as genai
 import os
 import requests
-genai.configure(api_key=os.getenv("GEMINI_API"))
-
-model = genai.GenerativeModel('gemini-2.0-flash')
-chat = model.start_chat(history=[])
+from dateutil import parser
 
 
 def serialize_docs(cursor):
@@ -29,18 +26,19 @@ def report_accident():
         "place":data['place']
     })
     return jsonify({"success":True})
-    
-@app.route("/report/event",methods=['POST'])
+
+@app.route("/report/event", methods=['POST'])
 def report_event():
     data = request.get_json()
-    reports.insert_one({
-        "type":"Event",
-        "name":data['name'],
-        "time":data['date'],
-        "place":data['place']
-    })
-    return jsonify({"success":True})
+    event_time = parser.isoparse(data['date'])  # Convert string to datetime
 
+    reports.insert_one({
+        "type": "Event",
+        "name": data['name'],
+        "time": event_time,
+        "place": data['place']
+    })
+    return jsonify({"success": True})
 @app.route("/report/traffic",methods=['POST'])
 def report_traffic():
     data = request.get_json()
@@ -53,6 +51,7 @@ def report_traffic():
 @app.route("/reports",methods=['GET'])
 def get_reports():
     thirty_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=30)
+    print(thirty_minutes_ago)
     cursor = reports.find({
     "time": {
         "$gte": thirty_minutes_ago
@@ -99,6 +98,7 @@ def get_bus(start,end):
     # Sort buses by next available time
     next_buses.sort(key=lambda x: x['next_time'])
 
+
     # Result: next upcoming bus
     if next_buses:
         print("Next bus:", next_buses[0])
@@ -122,7 +122,7 @@ def assistance():
     for report in reports_:
         log+= (report['type']+ " at "+ str(report['time']) + " \n ")
     print(log)
-    response = model.generate_content("You are a helpful assitance for Kottakkal traffic controlling & managing . like a interatcive talk . dont say good morning like things . you not need responsiblty to clear any traffic . responsive positivly. so generate not too long response for users prompt . use log data user requested any relevent data that in log log :"+log+". dont use any questions to users prompt"+data['prompt'])
+    response = model.generate_content("You are a helpful assitance for Kottakkal traffic controlling & managing . like a interatcive talk . dont say good morning like things . you not need responsiblty to clear any traffic . responsive positivly. so generate not too long response for users prompt . use log data user requested any relevent data that in log log :"+log+". dont ask any questions to users . prompt : "+data['prompt'])
     print(response.text)
     return jsonify({"response":response.text})
 
