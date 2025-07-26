@@ -108,12 +108,32 @@ def get_bus(start,end):
     
 @app.route("/chat",methods=["POST"])
 def assistance():
-    
+    data = request.get_json()
+    genai.configure(api_key=os.getenv("GEMINI_API"))
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    thirty_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=30)
+    cursor = reports.find({
+    "time": {
+        "$gte": thirty_minutes_ago
+    }
+    })
+    reports_ = list(cursor)
+    log = "Recent reports from kottakkal \n"
+    for report in reports_:
+        log+= (report['type']+ " at "+ str(report['time']) + " \n ")
+    print(log)
+    response = model.generate_content("You are a helpful assitance for Kottakkal traffic controlling & managing ,responsive positivly. so generate not too long response for users prompt . use log data user requested any relevent data that in log log :"+log+". dont use any questions to users prompt"+data['prompt'])
+    print(response.text)
+    return jsonify({"response":response.text})
+
+
+def assistance():
+    print(os.getenv('OPENROUTER_API'))
     data = request.get_json()
     url = "https://openrouter.ai/api/v1/chat/completions"
 
     headers = {
-        "Authorization": f"Bearer {os.getenv("OPENROUTER_API")}",  # Replace with your key
+        "Authorization": f"Bearer {os.getenv('OPENROUTER_API')}",
         "Content-Type": "application/json"
     }
     thirty_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=30)
@@ -129,7 +149,7 @@ def assistance():
     print(log)
         
     payload = {
-        "model": "qwen/qwen3-235b-a22b-2507:free",
+        "model": "qwen/qwq-32b:free",
         "messages": [
             {"role": "system", "content": "You are a helpful assitance for Kottakkal traffic controlling & managing , so generate not too long response for users prompt . use log data user requested any relevent data that in log log :"+log+". dont use any questions to users prompt"+data['prompt']},
             {"role": "user", "content": data['prompt']}
@@ -140,8 +160,10 @@ def assistance():
 
     if response.status_code == 200:
         data = response.json()
+        print(data)
         return jsonify({"response":data["choices"][0]["message"]["content"]})
     else:
+        print(response)
         return jsonify({"error":f"Error {response.status_code}: {response.text}"})
 
 
