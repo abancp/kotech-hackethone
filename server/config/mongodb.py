@@ -10,7 +10,7 @@ db = client['Kottakkal']
 
 
 reports = db['reports']
-classes = db['classes']
+buses = db['buses']
 works = db['works']
 anns= db['anns']
 submits = db['submits']
